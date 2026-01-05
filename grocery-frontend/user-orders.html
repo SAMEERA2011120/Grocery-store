@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Orders</title>
+    <link rel="stylesheet" href="./ css/style.css">
+</head>
+<body>
+    
+    <button class="back-btn" onclick="goBack()" >← Back</button>
+
+
+<h1 style="margin:20px;">📦 My Orders</h1>
+
+<div id="orders"></div>
+
+<script>
+
+    function goBack() {
+    window.location.href = "./index.html";
+}
+// 🔐 LOGIN CHECK
+const userName = localStorage.getItem("userName");
+
+if (!userName) {
+    alert("Please login");
+    window.location.href = "./auth/user-login.html";
+}
+
+// 📦 LOAD ONLY THIS USER'S ORDERS
+fetch(`http://localhost:8080/orders/user/${userName}`)
+    .then(res => res.json())
+    .then(orders => {
+        const container = document.getElementById("orders");
+        container.innerHTML = "";
+
+        if (!orders || orders.length === 0) {
+            container.innerHTML = "<p>No orders placed</p>";
+            return;
+        }
+
+        orders.forEach(o => {
+
+            // ✅ SAFE PARSE ITEMS
+            let items = [];
+            try {
+                let parsed = JSON.parse(o.items);
+                if (typeof parsed === "string") parsed = JSON.parse(parsed);
+                items = Array.isArray(parsed) ? parsed : [];
+            } catch {
+                items = [];
+            }
+
+            container.innerHTML += `
+                <div class="order-card">
+                    <h3>Order #${o.id}</h3>
+                    <p><b>Name:</b> ${o.name}</p>
+                    <p><b>Status:</b> ${o.status}</p>
+                    <ul>
+                        ${items.map(i =>
+                            `<li>${i.name} × ${i.quantity}</li>`
+                        ).join("")}
+                    </ul>
+                </div>
+            `;
+        });
+    })
+    .catch(() => {
+        document.getElementById("orders").innerHTML =
+            "<p>Failed to load orders</p>";
+    });
+</script>
+
+
+</body>
+</html>

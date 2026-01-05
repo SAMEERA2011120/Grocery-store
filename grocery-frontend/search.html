@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Products</title>
+    <link rel="stylesheet" href="./ css/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h2 class="logo">🛒</h2>
+        <nav>
+            <a class="active">🏠 Home</a>
+            <a href="./categories.html">📂 Categories</a>
+            <a href="./search.html">🔍 Search</a>
+            <a href = "./user-orders.html">❤️ Orders</a>
+            <a href="./cart.html">🛍️ Cart</a>
+            <a href="./ai-chat.html">🤖 AI Recipes</a>
+
+        </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+        <h1>🔍 Search Products</h1>
+
+        <!-- SEARCH BOX -->
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search by product name or category..."
+            oninput="filterProducts()"
+            class="search-box"
+        >
+
+        <!-- RESULTS -->
+        <div id="products" class="product-grid"></div>
+        <p id="noResult" style="display:none;">Item not found</p>
+    </main>
+
+</div>
+
+<script>
+let allProducts = [];
+
+// 🔹 Load all products once
+fetch("http://localhost:8080/products/all")
+    .then(res => res.json())
+    .then(data => {
+        allProducts = data;
+        renderProducts(allProducts); // default show all
+    });
+
+// 🔹 Filter logic
+function filterProducts() {
+    const keyword = document.getElementById("searchInput")
+        .value.toLowerCase().trim();
+
+    const filtered = allProducts.filter(p =>
+        p.name.toLowerCase().includes(keyword) ||
+        p.category.toLowerCase().includes(keyword)
+    );
+
+    renderProducts(filtered);
+}
+
+// 🔹 Render products
+function renderProducts(products) {
+    const container = document.getElementById("products");
+    const noResult = document.getElementById("noResult");
+
+    container.innerHTML = "";
+
+    if (products.length === 0) {
+        noResult.style.display = "block";
+        return;
+    }
+
+    noResult.style.display = "none";
+
+    products.forEach(p => {
+         const out = p.stock === 0;
+        container.innerHTML += `
+            <div class="product-card">
+                <img src="${p.imageUrl}" alt="${p.name}">
+                <h3>${p.name}</h3>
+                <p>₹${p.price}</p>
+                <p class="stock">
+                            Stock: <b>${p.stock}</b>
+                        </p>
+                        
+
+
+                        <button class="add-to-cart-btn"
+                            ${out ? "disabled" : ""}
+                            onclick="addToCart(${p.id})">
+                            ${out ? "Out of Stock" : "Add to Cart"}
+                        </button>
+            </div>
+        `;
+    });
+}
+</script>
+
+</body>
+</html>

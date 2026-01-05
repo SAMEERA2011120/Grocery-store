@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+
+    <!-- ✅ CORRECT CSS PATH -->
+    <link rel="stylesheet" href="./ css/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h2 class="logo">🛒 Admin</h2>
+        <nav>
+            <a class="active">📦 Products</a>
+            <a href="./add-product.html">➕ Add Product</a>
+            <a href="./admin-orders.html">📑 Orders</a>
+            <a onclick="logoutAdmin()" style="cursor:pointer;">🚪 Logout</a>
+        </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+        <h1>Product Management</h1>
+
+        <!-- PRODUCT GRID -->
+        <div class="admin-products" id="productGrid"></div>
+    </main>
+
+</div>
+
+<script>
+/* 🔐 SIMPLE ADMIN PROTECTION */
+if (localStorage.getItem("loggedIn") !== "admin") {
+    alert("Access denied. Admin login required.");
+    window.location.href = "./index.html";
+}
+
+/* LOAD PRODUCTS */
+document.addEventListener("DOMContentLoaded", loadProducts);
+
+function loadProducts() {
+    fetch("http://localhost:8080/products/all")
+        .then(res => res.json())
+        .then(products => {
+            const grid = document.getElementById("productGrid");
+            grid.innerHTML = "";
+
+            if (products.length === 0) {
+                grid.innerHTML = "<p>No products available.</p>";
+                return;
+            }
+
+            products.forEach(p => {
+                grid.innerHTML += `
+                    <div class="admin-card">
+                        <img src="${p.imageUrl}" alt="${p.name}">
+                        <h3>${p.name}</h3>
+                        <p>Category: ${p.category}</p>
+                        <p>Price: ₹${p.price}</p>
+                        <p>Stock: ${p.stock}</p>
+                        <p class="status ${p.stock > 0 ? 'in' : 'out'}">
+                            ${p.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                        </p>
+
+                        <div class="admin-actions">
+                            <button class="btn green" onclick="editProduct(${p.id})">Edit</button>
+                            <button class="btn orange" onclick="deleteProduct(${p.id})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Failed to load products");
+        });
+}
+
+/* EDIT PRODUCT */
+function editProduct(id) {
+    window.location.href = `edit-product.html?id=${id}`;
+}
+
+/* DELETE (will wire backend next step) */
+function deleteProduct(id) {
+
+    if (!confirm("Are you sure you want to delete this product?")) {
+        return;
+    }
+
+    fetch(`http://localhost:8080/products/${id}`, {
+        method: "DELETE"
+    })
+    .then(res => res.text())
+    .then(data => {
+        if (data === "PRODUCT_DELETED") {
+            alert("Product deleted successfully");
+            loadProducts(); // 🔁 refresh dashboard
+        } else {
+            alert("Product not found or delete failed");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Server error while deleting product");
+    });
+}
+
+
+/* LOGOUT */
+function logoutAdmin() {
+    if (confirm("Logout admin?")) {
+        localStorage.removeItem("loggedIn");
+        window.location.href = "./index.html";
+    }
+}
+</script>
+
+</body>
+</html>

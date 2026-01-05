@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Register</title>
+    <link rel="stylesheet" href="../ css/style.css">
+</head>
+<body>
+
+<div class="container">
+    <aside class="sidebar">
+        <h2 class="logo">🛒</h2>
+        <nav>
+            <a href="../index.html">🏠 Home</a>
+            <a>📂 Categories</a>
+            <a>🔍 Search</a>
+            <a>❤️ Saved Items</a>
+            <a>🛍️ Cart</a>
+        </nav>
+    </aside>
+
+    <main class="main auth-main">
+        <div class="auth-split-card">
+
+            <!-- LEFT -->
+            <div class="auth-left">
+                <h2>Join Grocery Store</h2>
+                <p>Create your account to start shopping fresh groceries.</p>
+                <img src="../images/registerImage.jpg.png" alt="Register">
+            </div>
+
+            <!-- RIGHT -->
+            <div class="auth-right">
+                <h2>User Registration</h2>
+
+                <!-- IMPORTANT: IDs added -->
+                <input id="name" type="text" placeholder="Full Name">
+                <input id="email" type="email" placeholder="Email Address">
+                <input id="password" type="password" placeholder="Password">
+
+                <!-- IMPORTANT: onclick added -->
+                <button class="btn green full" onclick="registerUser()">Create Account</button>
+
+                <p class="switch-text">
+                    Already have an account?
+                    <a href="user-login.html">Login</a>
+                </p>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+function registerUser() {
+    fetch("http://localhost:8080/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            name: document.getElementById("name").value,
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value
+        })
+    })
+    .then(res => res.text())
+    .then(data => {
+        if (data === "REGISTER_SUCCESS") {
+            alert("Registration successful");
+            window.location.href = "user-login.html";
+        } else if (data === "EMAIL_EXISTS") {
+            alert("Email already registered");
+        }
+    });
+}
+</script>
+
+</body>
+</html>

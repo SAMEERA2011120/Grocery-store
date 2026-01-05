@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Grocery Store</title>
+    <!-- ✅ FIXED PATH -->
+    <link rel="stylesheet" href="./ css/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h2 class="logo">🛒</h2>
+        <nav>
+            <a class="active">🏠 Home</a>
+            <a href="./categories.html">📂 Categories</a>
+            <a href="./search.html">🔍 Search</a>
+            <a href = "./user-orders.html">❤️ Orders</a>
+            <a href="./cart.html">🛍️ Cart</a>
+            <a href="./ai-chat.html">🤖 AI Recipes</a>
+
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+
+        
+      <div class="topbar header-row">
+    <h1 class="header-title">FRESHNESS ON DEMAND</h1>
+
+    <div class="icons">
+        <span id="userIcon" class="user-icon" onclick="handleUserIcon()">👤</span>
+
+        <div class="user-box" onclick="handleUserIcon()" style="cursor:pointer; text-align:center;">
+            <div id="userNameText" style="font-size:12px;"></div>
+        </div>
+
+        <span id="cartIcon" onclick="window.location.href='cart.html'" style="cursor:pointer;">
+            🛒 <span id="cartCount">0</span>
+        </span>
+    </div>
+</div>
+
+
+
+        
+
+        <section class="hero-full">
+
+
+    <img src="./images/background.png" alt="Grocery Banner" class="hero-banner">
+
+    <button class="btn green hero-btn" onclick="window.location.href='./categories.html'">Start Shopping</button>
+</section>
+
+        
+
+    </main>
+</div>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+    const icon = document.getElementById("userIcon");
+    const nameText = document.getElementById("userNameText");
+
+    if (localStorage.getItem("loggedIn")) {
+        icon.classList.add("logged-in");
+
+        const name = localStorage.getItem("userName");
+        nameText.innerText = name ? name : "User";
+    } else {
+        icon.classList.remove("logged-in");
+        nameText.innerText = "User";
+    }
+});
+
+function handleUserIcon() {
+    if (localStorage.getItem("loggedIn")) {
+        
+         if (confirm("Do you want to logout?")) {
+            localStorage.removeItem("loggedIn");
+            localStorage.removeItem("userName");
+            alert("Logged out successfully");
+            location.reload();
+        }
+    } else {
+        window.location.href = "./auth/select-role.html";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", loadProducts);
+
+
+
+/* TEMP CART HANDLER (NEXT STEP WE’LL IMPROVE THIS) */
+function addToCart(productId) {
+    const isLoggedIn = localStorage.getItem("loggedIn");
+    if (isLoggedIn !== "true") {
+        alert("Please login to add items to cart");
+        window.location.href = "./auth/user-login.html";
+        return;
+    }
+
+
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    fetch(`http://localhost:8080/products/all`)
+        .then(res => res.json())
+        .then(products => {
+
+            const product = products.find(p => p.id === productId);
+
+            if (!product || product.stock === 0) {
+                alert("Product out of stock");
+                return;
+            }
+
+            const existing = cart.find(item => item.id === productId);
+
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    imageUrl: product.imageUrl,
+                    quantity: 1
+                });
+            }
+
+            localStorage.setItem("cart", JSON.stringify(cart));
+            updateCartCount();
+
+            alert("Added to cart");
+        });
+}
+function updateCartCount() {
+    
+    const isLoggedIn = localStorage.getItem("loggedIn");
+    if (isLoggedIn !== "true") {
+        document.getElementById("cartCount").innerText = 0;
+        return;
+    }
+
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+    document.getElementById("cartCount").innerText = count;
+}
+
+document.addEventListener("DOMContentLoaded", updateCartCount);
+</script>
+
+
+
+
+</body>
+</html>

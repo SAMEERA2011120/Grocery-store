@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Product</title>
+    <link rel="stylesheet" href="./ css/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h2 class="logo">🛒 Admin</h2>
+        <nav>
+            <a href="admin-dashboard.html">📦 Products</a>
+            <a href="add-product.html">➕ Add Product</a>
+            <a class="active">✏️ Edit Product</a>
+            <a onclick="logoutAdmin()"style="cursor:pointer;">🚪 Logout</a>
+        </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+        <h1>Edit Product</h1>
+
+        <div class="add-product-card">
+
+            <input id="name" type="text" placeholder="Product Name">
+
+            <select id="category">
+                <option>Dairy</option>
+                <option>Vegetables</option>
+                <option>Fruits</option>
+                <option>Bakery</option>
+                <option>Snacks</option>
+            </select>
+
+            <input id="price" type="number" placeholder="Price">
+            <input id="stock" type="number" placeholder="Stock">
+            <input id="discount" type="number" placeholder="Discount">
+            <input id="imageUrl" type="text" placeholder="Image URL">
+
+            <textarea id="description" placeholder="Description"></textarea>
+
+            <select id="status">
+                <option value="In Stock">In Stock</option>
+                <option value="Out of Stock">Out of Stock</option>
+            </select>
+
+            <button class="btn green full" onclick="updateProduct()">
+                Update Product
+            </button>
+        </div>
+    </main>
+</div>
+
+<script>
+    /* 🔐 ADMIN PROTECTION */
+    if (localStorage.getItem("loggedIn") !== "admin") {
+        alert("Admin access only");
+        window.location.href = "../index.html";
+    }
+
+    /* GET PRODUCT ID */
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get("id");
+
+    /* 🔁 LOAD PRODUCT DATA */
+    fetch(`http://localhost:8080/products/${productId}`)
+        .then(res => res.json())
+        .then(p => {
+            document.getElementById("name").value = p.name ?? "";
+            document.getElementById("category").value = p.category ?? "Dairy";
+            document.getElementById("price").value = p.price ?? "";
+            document.getElementById("stock").value = p.stock ?? "";
+            document.getElementById("discount").value = p.discount ?? 0;
+            document.getElementById("imageUrl").value = p.imageUrl ?? "";
+            document.getElementById("description").value = p.description ?? "";
+            document.getElementById("status").value = p.status ?? "In Stock";
+        })
+        .catch(() => alert("Failed to load product"));
+
+    /* 🔄 UPDATE PRODUCT */
+    function updateProduct() {
+        fetch(`http://localhost:8080/products/${productId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name: name.value,
+                category: category.value,
+                price: price.value,
+                stock: stock.value,
+                discount: discount.value,
+                imageUrl: imageUrl.value,
+                description: description.value,
+                status: status.value
+            })
+        })
+        .then(res => res.json())
+        .then(() => {
+            alert("Product updated successfully");
+            window.location.href = "admin-dashboard.html";
+        })
+        .catch(() => alert("Update failed"));
+    }
+
+    /* LOGOUT */
+    function logoutAdmin() {
+        localStorage.removeItem("loggedIn");
+        window.location.href = "../index.html";
+    }
+</script>
+
+</body>
+</html>

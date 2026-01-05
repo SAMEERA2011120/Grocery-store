@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Cart</title>
+    <link rel="stylesheet" href=".// css/style.css">
+</head>
+<body>
+    <button class="back-btn" onclick="goBack()" >← Back</button>
+
+<h2>🛒 My Cart</h2>
+
+<div id="cartItems"></div>
+
+<h3 id="total"></h3>
+
+<div class="cart-summary">
+    <h3 id="total"></h3>
+    <button class="checkout-btn" onclick="goToOrder()">Checkout</button>
+</div>
+
+<script>
+    function goBack() {
+    window.location.href = "./index.html";
+}
+const cart = JSON.parse(localStorage.getItem("cart")) || [];
+const container = document.getElementById("cartItems");
+
+let total = 0;
+
+cart.forEach(item => {
+    total += item.price * item.quantity;
+
+    container.innerHTML += `
+        <div class="cart-item">
+            <img src="${item.imageUrl}">
+            <div class="cart-details">
+                <h4>${item.name}</h4>
+                <p>Quantity: ${item.quantity}</p>
+                <p class="cart-price">₹${item.price} × ${item.quantity}</p>
+            </div>
+        </div>
+    `;
+});
+
+document.getElementById("total").innerText = "Total: ₹" + total;
+
+
+function goToOrder() {
+    window.location.href = "order.html";
+}
+</script>
+
+
+</body>
+</html>

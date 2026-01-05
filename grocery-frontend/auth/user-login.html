@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Login</title>
+    <link rel="stylesheet" href="../ css/style.css">
+</head>
+<body>
+
+<div class="container">
+    <aside class="sidebar">
+        <h2 class="logo">🛒</h2>
+        <nav>
+            <a href="../index.html">🏠 Home</a>
+            <a>📂 Categories</a>
+            <a>🔍 Search</a>
+            <a>❤️ Saved Items</a>
+            <a>🛍️ Cart</a>
+        </nav>
+    </aside>
+
+    <main class="main auth-main">
+        <div class="auth-split-card">
+
+            <!-- LEFT -->
+            <div class="auth-left">
+                <h2>Welcome Back 👋</h2>
+                <p>Login to continue shopping fresh groceries.</p>
+                <img src="../images/loginImage.jpg.png" alt="Login">
+            </div>
+
+            <!-- RIGHT -->
+            <div class="auth-right">
+                <h2>User Login</h2>
+
+                <!-- IMPORTANT: IDs added -->
+                <input id="email" type="email" placeholder="Email Address">
+                <input id="password" type="password" placeholder="Password">
+
+                <!-- IMPORTANT: onclick added -->
+                <button class="btn green full" onclick="loginUser()">Login</button>
+
+                <p class="switch-text">
+                    New user?
+                    <a href="user-register.html">Create an account</a>
+                </p>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+function loginUser() {
+    fetch("http://localhost:8080/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value
+        })
+    })
+    .then(res => res.text())
+    .then(data => {
+        if (data === "LOGIN_SUCCESS") {
+            const email = document.getElementById("email").value.trim();
+            const userName = email.split("@")[0];
+
+            alert("Successfully logged in");
+
+            localStorage.setItem("loggedIn", "true");
+            localStorage.setItem("userName", userName);
+         
+        
+            window.location.href = "../index.html";
+        } else {
+            alert("User not found, please register");
+            window.location.href = "user-register.html";
+        }
+    });
+}
+</script>
+
+</body>
+</html>

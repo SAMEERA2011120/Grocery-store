@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Register</title>
+    <link rel="stylesheet" href="../ css/style.css">
+</head>
+<body>
+
+<div class="container">
+    <aside class="sidebar">
+        <h2 class="logo">🛒</h2>
+        <nav>
+            <a href="../index.html">🏠 Home</a>
+            <a>📂 Categories</a>
+            <a>🔍 Search</a>
+            <a>❤️ Saved Items</a>
+            <a>🛍️ Cart</a>
+        </nav>
+    </aside>
+
+    <main class="main auth-main">
+        <div class="auth-split-card">
+
+            <!-- LEFT -->
+            <div class="auth-left">
+                <h2>Admin Setup 🛠️</h2>
+                <p>Create an admin account to manage the grocery platform.</p>
+                <img src="../images/registerImage.jpg.png" alt="Admin Register">
+            </div>
+
+            <!-- RIGHT -->
+            <div class="auth-right">
+                <h2>Admin Registration</h2>
+
+                <!-- IDs added -->
+                <input id="adminName" type="text" placeholder="Admin Name">
+                <input id="adminId" type="text" placeholder="Admin ID">
+                <input id="password" type="password" placeholder="Password">
+
+                <!-- onclick added -->
+                <button class="btn orange full" onclick="registerAdmin()">Create Admin</button>
+
+                <p class="switch-text">
+                    Already an admin?
+                    <a href="admin-login.html">Login</a>
+                </p>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+    function registerAdmin() {
+        fetch("http://localhost:8080/admin/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name: document.getElementById("adminName").value,
+                adminId: document.getElementById("adminId").value,
+                password: document.getElementById("password").value
+            })
+        })
+        .then(res => res.text())
+        .then(data => {
+            if (data === "ADMIN_REGISTER_SUCCESS") {
+                alert("Admin registered successfully");
+                window.location.href = "admin-login.html";
+            } else if (data === "ADMIN_EXISTS") {
+                alert("Admin ID already exists");
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

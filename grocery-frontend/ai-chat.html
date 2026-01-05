@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>AI Recipe Assistant</title>
+    <link rel="stylesheet" href="./ css/style.css">
+</head>
+<body>
+
+<div class="container">
+    <aside class="sidebar">
+        <h2 class="logo">🛒</h2>
+        <nav>
+            <a class="active">🏠 Home</a>
+            <a href="./categories.html">📂 Categories</a>
+            <a href="./search.html">🔍 Search</a>
+            <a href = "./user-orders.html">❤️ Orders</a>
+            <a href="./cart.html">🛍️ Cart</a>
+            <a href="./ai-chat.html">🤖 AI Recipes</a>
+
+        </nav>
+    </aside>
+
+    <main class="main">
+        <h1>🤖 AI Recipe Assistant</h1>
+
+        <label for="dish" class="visually-hidden">Recipe name</label>
+        <input
+                class="search-box"
+                id="dish"
+                placeholder="Ask recipe (eg: chicken curry)"
+        >
+
+
+        <button class="add-to-cart-btn" onclick="askAI()">
+            Ask AI
+        </button>
+
+        <div id="result"></div>
+    </main>
+</div>
+
+<script>
+    function askAI() {
+
+        const dish = document.getElementById("dish").value.trim();
+        if (!dish) {
+            alert("Please enter a dish name");
+            return;
+        }
+
+        fetch("http://localhost:8080/api/recipe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ dish })
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            let html = "<h3>🧂 Ingredients</h3><ul>";
+            data.ingredients.forEach(i => html += `<li>${i}</li>`);
+            html += "</ul>";
+
+            if (data.matchedProducts.length > 0) {
+                html += "<h3>🛒 Available in Store</h3><ul>";
+                data.matchedProducts.forEach(p =>
+                    html += `<li>${p}</li>`
+                );
+                html += "</ul>";
+            } else {
+                html += "<p>No matching products found</p>";
+            }
+
+            document.getElementById("result").innerHTML = html;
+        });
+    }
+</script>
+
+</body>
+</html>

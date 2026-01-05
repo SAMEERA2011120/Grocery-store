@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Product</title>
+    <link rel="stylesheet" href="./ css/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h2 class="logo">🛒 Admin</h2>
+        <nav>
+            <a href="./admin-dashboard.html">📦 Products</a>
+            <a class="active">➕ Add Product</a>
+            <a>📑 Orders</a>
+            <a>👥 Users</a>
+            <a onclick="logoutAdmin()" style="cursor:pointer;">🚪 Logout</a>
+        </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <h1>Add New Product</h1>
+
+        <div class="add-product-card">
+
+            <input id="name" type="text" placeholder="Product Name">
+
+            <select id="category">
+                <option>Dairy</option>
+                <option>Vegetables</option>
+                <option>Fruits</option>
+                <option>Bakery</option>
+                <option>Snacks</option>
+            </select>
+
+            <input id="price" type="number" placeholder="Price (₹)">
+            <input id="stock" type="number" placeholder="Stock Quantity">
+            <input id="discount" type="number" placeholder="Discount (%)">
+            <input id="imageUrl" type="text" placeholder="Product Image URL">
+
+            <textarea id="description" placeholder="Product Description"></textarea>
+
+            <select id="status">
+                <option>In Stock</option>
+                <option>Out of Stock</option>
+            </select>
+
+            <button class="btn green full" onclick="addProduct()">Add Product</button>
+        </div>
+
+    </main>
+</div>
+
+<script>
+    function addProduct() {
+        fetch("http://localhost:8080/products/add", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name: document.getElementById("name").value,
+                category: document.getElementById("category").value,
+                price: document.getElementById("price").value,
+                stock: document.getElementById("stock").value,
+                discount: document.getElementById("discount").value,
+                imageUrl: document.getElementById("imageUrl").value,
+                description: document.getElementById("description").value,
+                status: document.getElementById("status").value
+            })
+        })
+        .then(res => res.text())
+        .then(data => {
+            if (data === "PRODUCT_ADDED") {
+                alert("Product added successfully");
+                window.location.href = "admin-dashboard.html";
+            }
+        });
+    }
+</script>
+</body>
+</html>

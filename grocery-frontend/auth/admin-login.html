@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="../ css/style.css">
+</head>
+<body>
+
+<div class="container">
+    <aside class="sidebar">
+        <h2 class="logo">🛒</h2>
+        <nav>
+            <a href="../index.html">🏠 Home</a>
+            <a>📂 Categories</a>
+            <a>🔍 Search</a>
+            <a>❤️ Saved Items</a>
+            <a>🛍️ Cart</a>
+        </nav>
+    </aside>
+
+    <main class="main auth-main">
+        <div class="auth-split-card">
+
+            <!-- LEFT -->
+            <div class="auth-left">
+                <h2>Admin Access 🔐</h2>
+                <p>Login to manage products, orders, and users.</p>
+                <img src="../images/loginImage.jpg.png" alt="Admin Login">
+            </div>
+
+            <!-- RIGHT -->
+            <div class="auth-right">
+                <h2>Admin Login</h2>
+
+                <!-- IDs added -->
+                <input id="adminId" type="text" placeholder="Admin ID">
+                <input id="password" type="password" placeholder="Password">
+
+                <!-- onclick added -->
+                <button class="btn orange full" onclick="adminLogin()">Login</button>
+
+                <p class="switch-text">
+                    New admin?
+                    <a href="admin-register.html">Create admin account</a>
+                </p>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+function adminLogin() {
+    fetch("http://localhost:8080/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            adminId: document.getElementById("adminId").value,
+            password: document.getElementById("password").value
+        })
+    })
+    .then(res => res.text())
+    .then(data => {
+        if (data === "ADMIN_LOGIN_SUCCESS") {
+            alert("Admin login successful");
+            localStorage.setItem("loggedIn", "admin");
+
+            window.location.href = "../admin-dashboard.html"; 
+        } else {
+            alert("Admin not found, please register");
+            window.location.href = "admin-register.html";
+        }
+    });
+}
+</script>
+
+</body>
+</html>

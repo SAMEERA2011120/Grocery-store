@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Place Order</title>
+    <link rel="stylesheet" href="./ css/style.css">
+
+    <style>
+        body { background:#f2f6f7; font-family: Arial; }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .step { display:none; }
+        .step.active { display:block; }
+
+        input, textarea {
+            width:100%;
+            padding:14px;
+            margin-bottom:15px;
+            border-radius:12px;
+            border:1px solid #ccc;
+        }
+
+        .btn {
+            padding:14px 30px;
+            border:none;
+            border-radius:25px;
+            cursor:pointer;
+            color:white;
+            font-size:16px;
+        }
+
+        .green { background:#2ecc71; }
+        .orange { background:#f39c12; }
+
+        .order-item {
+            background:#f9f9f9;
+            padding:15px;
+            border-radius:12px;
+            margin-bottom:10px;
+            display:flex;
+            justify-content:space-between;
+        }
+
+        .success {
+            text-align:center;
+            padding:40px;
+        }
+
+        .success h2 {
+            color:#2ecc71;
+            font-size:28px;
+        }
+
+        .tick {
+            font-size:80px;
+            color:#2ecc71;
+        }
+    </style>
+</head>
+<body>
+    
+
+<div class="container">
+
+    <!-- STEP 1: ADDRESS -->
+    <div class="step active" id="step1">
+        <h2>📍 Delivery Address</h2>
+        <input id="name" placeholder="Full Name">
+        <input id="phone" placeholder="Phone Number">
+        <textarea id="address" placeholder="Full Address"></textarea>
+        <button class="btn green" onclick="validateStep1()">Continue</button>
+    </div>
+
+    <!-- STEP 2: SUMMARY -->
+    <div class="step" id="step2">
+        <h2>🛍 Order Summary</h2>
+        <div id="items"></div>
+        <h3>Total: ₹<span id="total">0</span></h3><br>
+        <button class="btn green" onclick="goStep(3)">Continue</button>
+    </div>
+
+    <!-- STEP 3: PAYMENT -->
+    <div class="step" id="step3">
+        <h2>💳 Payment</h2>
+
+        <label>
+            <input type="radio" name="payment" value="COD" checked>
+            Cash on Delivery
+        </label><br><br>
+
+        <label>
+            <input type="radio" name="payment" value="UPI">
+            UPI
+        </label><br><br>
+
+        <button class="btn orange" onclick="placeOrder()">Place Order</button>
+    </div>
+
+    <!-- STEP 4: SUCCESS -->
+    <div class="step" id="step4">
+        <div class="success">
+            <div class="tick">✔</div>
+            <h2>Order Placed Successfully</h2>
+            <p>You will receive your order soon 🚚</p>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+/* STEP SWITCH */
+function goStep(n) {
+    document.querySelectorAll(".step").forEach(s => s.classList.remove("active"));
+    document.getElementById("step" + n).classList.add("active");
+    if (n === 2) loadSummary();
+}
+
+
+
+function validateStep1() {
+    const nameVal = document.getElementById("name").value.trim();
+    const phoneVal = document.getElementById("phone").value.trim();
+    const addressVal = document.getElementById("address").value.trim();
+
+    if (!nameVal || !phoneVal || !addressVal) {
+        alert("Please fill all address details");
+        return;
+    }
+
+    goStep(2);
+}
+
+
+
+/* LOAD CART SUMMARY */
+function loadSummary() {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    if (cart.length === 0) {
+        alert("Cart is empty");
+        window.location.href = "cart.html";
+        return;
+    }
+
+    let total = 0;
+    let html = "";
+
+    cart.forEach(i => {
+        const itemTotal = i.price * i.quantity;
+        total += itemTotal;
+
+        html += `
+            <div class="order-item">
+                <div>${i.name} × ${i.quantity}</div>
+                <div>₹${itemTotal}</div>
+            </div>
+        `;
+    });
+
+    document.getElementById("items").innerHTML = html;
+    document.getElementById("total").innerText = total;
+}
+
+/* PLACE ORDER */
+
+
+
+function placeOrder() {
+
+    // 🔐 CHECK LOGIN
+    const userName = localStorage.getItem("userName");
+    if (!userName) {
+        alert("Please login to place order");
+        window.location.href = "auth/user-login.html";
+        return;
+    }
+
+    // ✅ READ INPUT VALUES HERE (IMPORTANT)
+    const fullName = document.getElementById("name").value.trim();
+    const phoneVal = document.getElementById("phone").value.trim();
+    const addressVal = document.getElementById("address").value.trim();
+
+    if (!fullName || !phoneVal || !addressVal) {
+        alert("Please fill all address details");
+        goStep(1);
+        return;
+    }
+
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const payment = document.querySelector("input[name=payment]:checked").value;
+
+    const order = {
+        userName: userName,          // login user (abc)
+        name: fullName,              // ✅ FULL NAME (FIXED)
+        phone: phoneVal,
+        address: addressVal,
+        paymentMethod: payment,
+        // items: JSON.stringify(cart),
+        items: cart,
+        status: "PLACED"
+    };
+
+    fetch("http://localhost:8080/orders/place", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(order)
+    })
+    .then(res => res.text())
+    .then(msg => {
+        if (msg === "OUT_OF_STOCK") {
+        alert("❌ Some items are out of stock");
+        return;
+        }
+        if (msg === "ORDER_PLACED") {
+            localStorage.removeItem("cart");
+            goStep(4);
+            setTimeout(() => {
+            window.location.href = "./index.html";
+        }, 2000);
+        } else {
+            alert("Order failed");
+        }
+    })
+    .catch(() => alert("Server error"));
+}
+
+
+</script>
+
+</body>
+</html>
